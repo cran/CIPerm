@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Replicating Nguyen (2009) with CIPerm</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Replicating Nguyen (2009) with
+<code>CIPerm</code></h1>
+
+
+
+<p>We show that our package replicates the analyses in:</p>
+<ul>
+<li>Nguyen, M.D. (2009), “Nonparametric Inference using Randomization
+and Permutation Reference Distribution and their Monte-Carlo
+Approximation” [unpublished MS thesis; Mara Tableman, advisor], Portland
+State University. <em>Dissertations and Theses</em>. Paper 5927. <a href="https://archives.pdx.edu/ds/psu/37406" class="uri">https://archives.pdx.edu/ds/psu/37406</a>.</li>
+</ul>
+<p>Note that our R function arguments and outputs are structured
+differently than the similarly-named R functions in Nguyen (2009), but
+the results are equivalent.</p>
+<p>We also compare our output against related results in:</p>
+<ul>
+<li>Ernst, M.D. (2004), “Permutation Methods: A Basis for Exact
+Inference,” <em>Statistical Science</em>, vol. 19, no. 4, 676-685, <a href="https://doi.org/10.1214/088342304000000396">DOI:10.1214/088342304000000396</a>.</li>
+</ul>
+<p>Following Ernst (2004) and Nguyen (2009), we use the phrase
+“permutation methods” to include both <em>randomization</em> tests
+(where we assume random assignment of 2 treatments) and
+<em>permutation</em> tests (where we assume random sampling from 2
+populations). In the simple settings in this R package, the
+randomization and permutation test mechanics are identical, though their
+interpretations may differ.</p>
+<div id="brief-overview-of-nguyen-2009s-method" class="section level1">
+<h1>Brief overview of Nguyen (2009)’s method</h1>
+<p>Consider a two-sample testing setup, where <span class="math inline">\(X_1, \ldots, X_m\)</span> are the responses from
+the control group and <span class="math inline">\(Y_1, \ldots,
+Y_n\)</span> are the responses from the treatment group. Imagine that
+lower responses are better (e.g., illness recovery times).</p>
+<p>With a standard one-sided randomization test or permutation test, we
+can test <span class="math inline">\(H_0: \mu_Y - \mu_X \geq 0\)</span>
+against <span class="math inline">\(H_A: \mu_Y - \mu_X &lt;
+0\)</span>.</p>
+<p>We could also test for a specific value of <span class="math inline">\(\mu_Y - \mu_X\)</span>, e.g. <span class="math inline">\(H_0: \mu_Y - \mu_X \geq \Delta\)</span> against
+<span class="math inline">\(H_A: \mu_Y - \mu_X &lt; \Delta\)</span>. If
+we assume a constant additive effect, we could carry this out by
+replacing all the <span class="math inline">\(Y_j\)</span> values with
+<span class="math inline">\(Y_{j,\Delta} = Y_j-\Delta\)</span> and then
+running the usual randomization test for a difference of 0.</p>
+<p>Finally, we can invert the test to get a confidence interval. If we
+repeat the procedure above for many difference values of <span class="math inline">\(\Delta\)</span> and record the values where the
+test fails to reject at level <span class="math inline">\(\alpha\)</span>, we will have a <span class="math inline">\(1-\alpha\)</span> one-tailed confidence interval
+for <span class="math inline">\(\Delta\)</span>.</p>
+<p>Doing this naively would require running many new permutations at
+each of many <span class="math inline">\(\Delta\)</span> values. But
+Nguyen (2009) derives a shortcut that gives this confidence interval
+directly from a single set of permutations.</p>
+<div id="we-dont-have-to-recompute-the-permutation-distribution-for-each-delta" class="section level2">
+<h2>We don’t have to recompute the permutation distribution for each
+<span class="math inline">\(\Delta\)</span></h2>
+<p>Each permutation involves swapping <span class="math inline">\(k\)</span> labels: we treat <span class="math inline">\(k\)</span> of the <span class="math inline">\(X_i\)</span> as if they were <span class="math inline">\(Y_j\)</span> and vice versa. Let <span class="math inline">\(t_{k,d}\)</span> be the difference in group means
+for <span class="math inline">\(d^{th}\)</span> of the permutations with
+<span class="math inline">\(k\)</span> swaps. For instance, on the
+original data we have <span class="math display">\[t_0 =
+\frac{\sum_{j=1}^n Y_j}{n} - \frac{\sum_{i=1}^m X_i}{m}\]</span> and
+other permutations have the form <span class="math display">\[t_{k,d} =
+\frac{\sum_{i=1}^k X_i + \sum_{j=k+1}^n Y_j}{n} - \frac{\sum_{j=1}^k Y_j
++ \sum_{i=k+1}^m X_i}{m}\]</span></p>
+<p>Now if <span class="math inline">\(t_{k,d,\Delta}\)</span> is the
+same statistic but computed on the dataset where <span class="math inline">\(Y_{j,\Delta}\)</span> replaces <span class="math inline">\(Y_j\)</span>, then Nguyen (2009) shows that <span class="math display">\[t_{k,d,\Delta} = t_{k,d} - \Delta +
+k\left(\frac{1}{n}+\frac{1}{m}\right)\Delta\]</span> So if we keep track
+of <span class="math inline">\(k\)</span> for each permutation, then one
+run of the randomization test is enough – we don’t need to carry out new
+runs for new <span class="math inline">\(\Delta\)</span> values.</p>
+</div>
+<div id="we-dont-have-to-try-every-possible-delta" class="section level2">
+<h2>We don’t have to try every possible <span class="math inline">\(\Delta\)</span></h2>
+<p>Next, we don’t actually have to calculate <span class="math inline">\(t_{k,d,\Delta}\)</span> values directly—only the
+<span class="math inline">\(t_{k,d}\)</span> values we would usually
+calculate for a standard test of no difference in means, and the values
+of <span class="math inline">\(k\)</span> for each permutation.</p>
+<p>Let <span class="math inline">\(w_{k,d} =
+\frac{t_0-t_{k,d}}{k\left(\frac{1}{n}+\frac{1}{m}\right)}\)</span>.
+Nguyen (2009) shows that if we compute the <span class="math inline">\(w_{k,d}\)</span> for each permutation and sort
+them, then their upper <span class="math inline">\(\alpha\)</span>
+quantile <span class="math inline">\(w_{(\alpha)}\)</span> gives the
+<span class="math inline">\(1-\alpha\)</span> one-sided CI upper bound
+for <span class="math inline">\(\Delta\)</span>: <span class="math display">\[\hat{P}[\Delta \in (-\infty, w_{(\alpha)})] =
+1-\alpha\]</span> To get a two-sided CI for <span class="math inline">\(\Delta\)</span>, we can do this for both tails at
+half the nominal alpha.</p>
+<p>In our R package, <code>dset()</code> sets up the usual two-sample
+randomization or permutation test, but also records <span class="math inline">\(k\)</span> and <span class="math inline">\(w_{k,d}\)</span> for each permutation. Then
+<code>cint()</code> finds the appropriate quantiles of <span class="math inline">\(w_{k,d}\)</span> to return the confidence
+interval.</p>
+<p>We also track a few other test statistics, allowing
+<code>pval()</code> to return p-values for a difference in means, a
+difference in medians, or the Wilcoxon rank sum test.</p>
+</div>
+</div>
+<div id="recovery-times-example" class="section level1">
+<h1>Recovery times example</h1>
+<p>Input the data from Table 1:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(CIPerm)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">19</span>, <span class="dv">22</span>, <span class="dv">25</span>, <span class="dv">26</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">23</span>, <span class="dv">33</span>, <span class="dv">40</span>)</span></code></pre></div>
+<p>Replicate Table 2 along with the three extra columns from Table
+3:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>demo <span class="ot">&lt;-</span> <span class="fu">dset</span>(x, y, <span class="at">returnData =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(demo, <span class="at">digits =</span> <span class="dv">2</span>)</span></code></pre></div>
+<table style="width:100%;">
+<colgroup>
+<col width="4%" />
+<col width="4%" />
+<col width="4%" />
+<col width="4%" />
+<col width="4%" />
+<col width="4%" />
+<col width="4%" />
+<col width="4%" />
+<col width="12%" />
+<col width="6%" />
+<col width="15%" />
+<col width="9%" />
+<col width="4%" />
+<col width="9%" />
+<col width="9%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="right">ID</th>
+<th align="right">1</th>
+<th align="right">2</th>
+<th align="right">3</th>
+<th align="right">4</th>
+<th align="right">5</th>
+<th align="right">6</th>
+<th align="right">7</th>
+<th align="right">diffmean</th>
+<th align="right">sum1</th>
+<th align="right">diffmedian</th>
+<th align="right">wilsum</th>
+<th align="right">k</th>
+<th align="right">wkd</th>
+<th align="right">w.i</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">19</td>
+<td align="right">22</td>
+<td align="right">25</td>
+<td align="right">26</td>
+<td align="right">23</td>
+<td align="right">33</td>
+<td align="right">40</td>
+<td align="right">-9.00</td>
+<td align="right">92</td>
+<td align="right">-9.5</td>
+<td align="right">12</td>
+<td align="right">0</td>
+<td align="right">NaN</td>
+<td align="right">NaN</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">19</td>
+<td align="right">22</td>
+<td align="right">25</td>
+<td align="right">23</td>
+<td align="right">26</td>
+<td align="right">33</td>
+<td align="right">40</td>
+<td align="right">-10.75</td>
+<td align="right">89</td>
+<td align="right">-10.5</td>
+<td align="right">10</td>
+<td align="right">1</td>
+<td align="right">3.00</td>
+<td align="right">-21.00</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="right">19</td>
+<td align="right">22</td>
+<td align="right">25</td>
+<td align="right">33</td>
+<td align="right">26</td>
+<td align="right">23</td>
+<td align="right">40</td>
+<td align="right">-4.92</td>
+<td align="right">99</td>
+<td align="right">-2.5</td>
+<td align="right">13</td>
+<td align="right">1</td>
+<td align="right">-7.00</td>
+<td align="right">-18.00</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="right">19</td>
+<td align="right">22</td>
+<td align="right">25</td>
+<td align="right">40</td>
+<td align="right">26</td>
+<td align="right">23</td>
+<td align="right">33</td>
+<td align="right">-0.83</td>
+<td align="right">106</td>
+<td align="right">-2.5</td>
+<td align="right">14</td>
+<td align="right">1</td>
+<td align="right">-14.00</td>
+<td align="right">-16.00</td>
+</tr>
+<tr class="odd">
+<td align="right">5</td>
+<td align="right">19</td>
+<td align="right">22</td>
+<td align="right">26</td>
+<td align="right">23</td>
+<td align="right">25</td>
+<td align="right">33</td>
+<td align="right">40</td>
+<td align="right">-10.17</td>
+<td align="right">90</td>
+<td align="right">-10.5</td>
+<td align="right">11</td>
+<td align="right">1</td>
+<td align="right">2.00</td>
+<td align="right">-15.00</td>
+</tr>
+<tr class="even">
+<td align="right">6</td>
+<td align="right">19</td>
+<td align="right">22</td>
+<td align="right">26</td>
+<td align="right">33</td>
+<td align="right">25</td>
+<td align="right">23</td>
+<td align="right">40</td>
+<td align="right">-4.33</td>
+<td align="right">100</td>
+<td align="right">-1.0</td>
+<td align="right">14</td>
+<td align="right">1</td>
+<td align="right">-8.00</td>
+<td align="right">-14.50</td>
+</tr>
+<tr class="odd">
+<td align="right">7</td>
+<td align="right">19</td>
+<td align="right">22</td>
+<td align="right">26</td>
+<td align="right">40</td>
+<td align="right">25</td>
+<td align="right">23</td>
+<td align="right">33</td>
+<td align="right">-0.25</td>
+<td align="right">107</td>
+<td align="right">-1.0</td>
+<td align="right">15</td>
+<td align="right">1</td>
+<td align="right">-15.00</td>
+<td align="right">-14.00</td>
+</tr>
+<tr class="even">
+<td align="right">8</td>
+<td align="right">19</td>
+<td align="right">22</td>
+<td align="right">23</td>
+<td align="right">33</td>
+<td align="right">25</td>
+<td align="right">26</td>
+<td align="right">40</td>
+<td align="right">-6.08</td>
+<td align="right">97</td>
+<td align="right">-3.5</td>
+<td align="right">12</td>
+<td align="right">2</td>
+<td align="right">-2.50</td>
+<td align="right">-14.00</td>
+</tr>
+<tr class="odd">
+<td align="right">9</td>
+<td align="right">19</td>
+<td align="right">22</td>
+<td align="right">23</td>
+<td align="right">40</td>
+<td align="right">25</td>
+<td align="right">26</td>
+<td align="right">33</td>
+<td align="right">-2.00</td>
+<td align="right">104</td>
+<td align="right">-3.5</td>
+<td align="right">13</td>
+<td align="right">2</td>
+<td align="right">-6.00</td>
+<td align="right">-14.00</td>
+</tr>
+<tr class="even">
+<td align="right">10</td>
+<td align="right">19</td>
+<td align="right">22</td>
+<td align="right">33</td>
+<td align="right">40</td>
+<td align="right">25</td>
+<td align="right">26</td>
+<td align="right">23</td>
+<td align="right">3.83</td>
+<td align="right">114</td>
+<td align="right">2.5</td>
+<td align="right">16</td>
+<td align="right">2</td>
+<td align="right">-11.00</td>
+<td align="right">-13.00</td>
+</tr>
+<tr class="odd">
+<td align="right">11</td>
+<td align="right">19</td>
+<td align="right">25</td>
+<td align="right">26</td>
+<td align="right">23</td>
+<td align="right">22</td>
+<td align="right">33</td>
+<td align="right">40</td>
+<td align="right">-8.42</td>
+<td align="right">93</td>
+<td align="right">-9.0</td>
+<td align="right">13</td>
+<td align="right">1</td>
+<td align="right">-1.00</td>
+<td align="right">-12.50</td>
+</tr>
+<tr class="even">
+<td align="right">12</td>
+<td align="right">19</td>
+<td align="right">25</td>
+<td align="right">26</td>
+<td align="right">33</td>
+<td align="right">22</td>
+<td align="right">23</td>
+<td align="right">40</td>
+<td align="right">-2.58</td>
+<td align="right">103</td>
+<td align="right">2.5</td>
+<td align="right">16</td>
+<td align="right">1</td>
+<td align="right">-11.00</td>
+<td align="right">-11.00</td>
+</tr>
+<tr class="odd">
+<td align="right">13</td>
+<td align="right">19</td>
+<td align="right">25</td>
+<td align="right">26</td>
+<td align="right">40</td>
+<td align="right">22</td>
+<td align="right">23</td>
+<td align="right">33</td>
+<td align="right">1.50</td>
+<td align="right">110</td>
+<td align="right">2.5</td>
+<td align="right">17</td>
+<td align="right">1</td>
+<td align="right">-18.00</td>
+<td align="right">-11.00</td>
+</tr>
+<tr class="even">
+<td align="right">14</td>
+<td align="right">19</td>
+<td align="right">25</td>
+<td align="right">23</td>
+<td align="right">33</td>
+<td align="right">22</td>
+<td align="right">26</td>
+<td align="right">40</td>
+<td align="right">-4.33</td>
+<td align="right">100</td>
+<td align="right">-2.0</td>
+<td align="right">14</td>
+<td align="right">2</td>
+<td align="right">-4.00</td>
+<td align="right">-11.00</td>
+</tr>
+<tr class="odd">
+<td align="right">15</td>
+<td align="right">19</td>
+<td align="right">25</td>
+<td align="right">23</td>
+<td align="right">40</td>
+<td align="right">22</td>
+<td align="right">26</td>
+<td align="right">33</td>
+<td align="right">-0.25</td>
+<td align="right">107</td>
+<td align="right">-2.0</td>
+<td align="right">15</td>
+<td align="right">2</td>
+<td align="right">-7.50</td>
+<td align="right">-10.00</td>
+</tr>
+<tr class="even">
+<td align="right">16</td>
+<td align="right">19</td>
+<td align="right">25</td>
+<td align="right">33</td>
+<td align="right">40</td>
+<td align="right">22</td>
+<td align="right">26</td>
+<td align="right">23</td>
+<td align="right">5.58</td>
+<td align="right">117</td>
+<td align="right">6.0</td>
+<td align="right">18</td>
+<td align="right">2</td>
+<td align="right">-12.50</td>
+<td align="right">-9.67</td>
+</tr>
+<tr class="odd">
+<td align="right">17</td>
+<td align="right">19</td>
+<td align="right">26</td>
+<td align="right">23</td>
+<td align="right">33</td>
+<td align="right">22</td>
+<td align="right">25</td>
+<td align="right">40</td>
+<td align="right">-3.75</td>
+<td align="right">101</td>
+<td align="right">-0.5</td>
+<td align="right">15</td>
+<td align="right">2</td>
+<td align="right">-4.50</td>
+<td align="right">-9.50</td>
+</tr>
+<tr class="even">
+<td align="right">18</td>
+<td align="right">19</td>
+<td align="right">26</td>
+<td align="right">23</td>
+<td align="right">40</td>
+<td align="right">22</td>
+<td align="right">25</td>
+<td align="right">33</td>
+<td align="right">0.33</td>
+<td align="right">108</td>
+<td align="right">-0.5</td>
+<td align="right">16</td>
+<td align="right">2</td>
+<td align="right">-8.00</td>
+<td align="right">-9.00</td>
+</tr>
+<tr class="odd">
+<td align="right">19</td>
+<td align="right">19</td>
+<td align="right">26</td>
+<td align="right">33</td>
+<td align="right">40</td>
+<td align="right">22</td>
+<td align="right">25</td>
+<td align="right">23</td>
+<td align="right">6.17</td>
+<td align="right">118</td>
+<td align="right">6.5</td>
+<td align="right">19</td>
+<td align="right">2</td>
+<td align="right">-13.00</td>
+<td align="right">-8.67</td>
+</tr>
+<tr class="even">
+<td align="right">20</td>
+<td align="right">19</td>
+<td align="right">23</td>
+<td align="right">33</td>
+<td align="right">40</td>
+<td align="right">22</td>
+<td align="right">25</td>
+<td align="right">26</td>
+<td align="right">4.42</td>
+<td align="right">115</td>
+<td align="right">3.0</td>
+<td align="right">17</td>
+<td align="right">3</td>
+<td align="right">-7.67</td>
+<td align="right">-8.00</td>
+</tr>
+<tr class="odd">
+<td align="right">21</td>
+<td align="right">22</td>
+<td align="right">25</td>
+<td align="right">26</td>
+<td align="right">23</td>
+<td align="right">19</td>
+<td align="right">33</td>
+<td align="right">40</td>
+<td align="right">-6.67</td>
+<td align="right">96</td>
+<td align="right">-9.0</td>
+<td align="right">14</td>
+<td align="right">1</td>
+<td align="right">-4.00</td>
+<td align="right">-8.00</td>
+</tr>
+<tr class="even">
+<td align="right">22</td>
+<td align="right">22</td>
+<td align="right">25</td>
+<td align="right">26</td>
+<td align="right">33</td>
+<td align="right">19</td>
+<td align="right">23</td>
+<td align="right">40</td>
+<td align="right">-0.83</td>
+<td align="right">106</td>
+<td align="right">2.5</td>
+<td align="right">17</td>
+<td align="right">1</td>
+<td align="right">-14.00</td>
+<td align="right">-7.67</td>
+</tr>
+<tr class="odd">
+<td align="right">23</td>
+<td align="right">22</td>
+<td align="right">25</td>
+<td align="right">26</td>
+<td align="right">40</td>
+<td align="right">19</td>
+<td align="right">23</td>
+<td align="right">33</td>
+<td align="right">3.25</td>
+<td align="right">113</td>
+<td align="right">2.5</td>
+<td align="right">18</td>
+<td align="right">1</td>
+<td align="right">-21.00</td>
+<td align="right">-7.50</td>
+</tr>
+<tr class="even">
+<td align="right">24</td>
+<td align="right">22</td>
+<td align="right">25</td>
+<td align="right">23</td>
+<td align="right">33</td>
+<td align="right">19</td>
+<td align="right">26</td>
+<td align="right">40</td>
+<td align="right">-2.58</td>
+<td align="right">103</td>
+<td align="right">-2.0</td>
+<td align="right">15</td>
+<td align="right">2</td>
+<td align="right">-5.50</td>
+<td align="right">-7.50</td>
+</tr>
+<tr class="odd">
+<td align="right">25</td>
+<td align="right">22</td>
+<td align="right">25</td>
+<td align="right">23</td>
+<td align="right">40</td>
+<td align="right">19</td>
+<td align="right">26</td>
+<td align="right">33</td>
+<td align="right">1.50</td>
+<td align="right">110</td>
+<td align="right">-2.0</td>
+<td align="right">16</td>
+<td align="right">2</td>
+<td align="right">-9.00</td>
+<td align="right">-7.00</td>
+</tr>
+<tr class="even">
+<td align="right">26</td>
+<td align="right">22</td>
+<td align="right">25</td>
+<td align="right">33</td>
+<td align="right">40</td>
+<td align="right">19</td>
+<td align="right">26</td>
+<td align="right">23</td>
+<td align="right">7.33</td>
+<td align="right">120</td>
+<td align="right">6.0</td>
+<td align="right">19</td>
+<td align="right">2</td>
+<td align="right">-14.00</td>
+<td align="right">-6.00</td>
+</tr>
+<tr class="odd">
+<td align="right">27</td>
+<td align="right">22</td>
+<td align="right">26</td>
+<td align="right">23</td>
+<td align="right">33</td>
+<td align="right">19</td>
+<td align="right">25</td>
+<td align="right">40</td>
+<td align="right">-2.00</td>
+<td align="right">104</td>
+<td align="right">-0.5</td>
+<td align="right">16</td>
+<td align="right">2</td>
+<td align="right">-6.00</td>
+<td align="right">-6.00</td>
+</tr>
+<tr class="even">
+<td align="right">28</td>
+<td align="right">22</td>
+<td align="right">26</td>
+<td align="right">23</td>
+<td align="right">40</td>
+<td align="right">19</td>
+<td align="right">25</td>
+<td align="right">33</td>
+<td align="right">2.08</td>
+<td align="right">111</td>
+<td align="right">-0.5</td>
+<td align="right">17</td>
+<td align="right">2</td>
+<td align="right">-9.50</td>
+<td align="right">-5.50</td>
+</tr>
+<tr class="odd">
+<td align="right">29</td>
+<td align="right">22</td>
+<td align="right">26</td>
+<td align="right">33</td>
+<td align="right">40</td>
+<td align="right">19</td>
+<td align="right">25</td>
+<td align="right">23</td>
+<td align="right">7.92</td>
+<td align="right">121</td>
+<td align="right">6.5</td>
+<td align="right">20</td>
+<td align="right">2</td>
+<td align="right">-14.50</td>
+<td align="right">-4.50</td>
+</tr>
+<tr class="even">
+<td align="right">30</td>
+<td align="right">22</td>
+<td align="right">23</td>
+<td align="right">33</td>
+<td align="right">40</td>
+<td align="right">19</td>
+<td align="right">25</td>
+<td align="right">26</td>
+<td align="right">6.17</td>
+<td align="right">118</td>
+<td align="right">3.0</td>
+<td align="right">18</td>
+<td align="right">3</td>
+<td align="right">-8.67</td>
+<td align="right">-4.00</td>
+</tr>
+<tr class="odd">
+<td align="right">31</td>
+<td align="right">25</td>
+<td align="right">26</td>
+<td align="right">23</td>
+<td align="right">33</td>
+<td align="right">19</td>
+<td align="right">22</td>
+<td align="right">40</td>
+<td align="right">-0.25</td>
+<td align="right">107</td>
+<td align="right">3.5</td>
+<td align="right">18</td>
+<td align="right">2</td>
+<td align="right">-7.50</td>
+<td align="right">-4.00</td>
+</tr>
+<tr class="even">
+<td align="right">32</td>
+<td align="right">25</td>
+<td align="right">26</td>
+<td align="right">23</td>
+<td align="right">40</td>
+<td align="right">19</td>
+<td align="right">22</td>
+<td align="right">33</td>
+<td align="right">3.83</td>
+<td align="right">114</td>
+<td align="right">3.5</td>
+<td align="right">19</td>
+<td align="right">2</td>
+<td align="right">-11.00</td>
+<td align="right">-2.50</td>
+</tr>
+<tr class="odd">
+<td align="right">33</td>
+<td align="right">25</td>
+<td align="right">26</td>
+<td align="right">33</td>
+<td align="right">40</td>
+<td align="right">19</td>
+<td align="right">22</td>
+<td align="right">23</td>
+<td align="right">9.67</td>
+<td align="right">124</td>
+<td align="right">7.5</td>
+<td align="right">22</td>
+<td align="right">2</td>
+<td align="right">-16.00</td>
+<td align="right">-1.00</td>
+</tr>
+<tr class="even">
+<td align="right">34</td>
+<td align="right">25</td>
+<td align="right">23</td>
+<td align="right">33</td>
+<td align="right">40</td>
+<td align="right">19</td>
+<td align="right">22</td>
+<td align="right">26</td>
+<td align="right">7.92</td>
+<td align="right">121</td>
+<td align="right">7.0</td>
+<td align="right">20</td>
+<td align="right">3</td>
+<td align="right">-9.67</td>
+<td align="right">2.00</td>
+</tr>
+<tr class="odd">
+<td align="right">35</td>
+<td align="right">26</td>
+<td align="right">23</td>
+<td align="right">33</td>
+<td align="right">40</td>
+<td align="right">19</td>
+<td align="right">22</td>
+<td align="right">25</td>
+<td align="right">8.50</td>
+<td align="right">122</td>
+<td align="right">7.5</td>
+<td align="right">21</td>
+<td align="right">3</td>
+<td align="right">-10.00</td>
+<td align="right">3.00</td>
+</tr>
+</tbody>
+</table>
+<p>Replicate the left-tailed p-values reported on pages 5-6.<br />
+The first three should be <code>0.08571429</code>, and the last should
+be <code>0.1142857</code>.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Difference in means</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">pval</span>(demo, <span class="at">tail =</span> <span class="st">&quot;Left&quot;</span>, <span class="at">value =</span> <span class="st">&quot;m&quot;</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.08571429</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Sum of treatment group</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">pval</span>(demo, <span class="at">tail =</span> <span class="st">&quot;Left&quot;</span>, <span class="at">value =</span> <span class="st">&quot;s&quot;</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.08571429</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Difference in medians</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="fu">pval</span>(demo, <span class="at">tail =</span> <span class="st">&quot;Left&quot;</span>, <span class="at">value =</span> <span class="st">&quot;d&quot;</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.08571429</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Wilcoxon rank sum statistic</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="fu">pval</span>(demo, <span class="at">tail =</span> <span class="st">&quot;Left&quot;</span>, <span class="at">value =</span> <span class="st">&quot;w&quot;</span>)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.1142857</span></span></code></pre></div>
+<p>Replicate the confidence interval (left-tailed, with confidence level
+<span class="math inline">\((1 - \frac{2}{35})\times 100\% \approx
+94.3\%\)</span>) reported on page 11.<br />
+This should be <code>c(-Inf, 2)</code>.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cint</span>(demo, <span class="at">conf.level =</span> <span class="dv">1-2</span><span class="sc">/</span><span class="dv">35</span>, <span class="at">tail =</span> <span class="st">&quot;Left&quot;</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Achieved conf. level: 1-(2/35)</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.int</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] -Inf    2</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.level.achieved</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.9428571</span></span></code></pre></div>
+</div>
+<div id="wing-lengths-and-antennae-lengths-example" class="section level1">
+<h1>Wing lengths and antennae lengths example</h1>
+<p>Input and process the data from Table 4:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>wl1 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">1.72</span>, <span class="fl">1.64</span>, <span class="fl">1.74</span>, <span class="fl">1.70</span>, <span class="fl">1.82</span>, <span class="fl">1.82</span>, <span class="fl">1.90</span>, <span class="fl">1.82</span>, <span class="fl">2.08</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>wl2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">1.78</span>, <span class="fl">1.86</span>, <span class="fl">1.96</span>, <span class="fl">2.00</span>, <span class="fl">2.00</span>, <span class="fl">1.96</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>wl <span class="ot">&lt;-</span> <span class="fu">dset</span>(wl1, wl2)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>al1 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">1.24</span>, <span class="fl">1.38</span>, <span class="fl">1.36</span>, <span class="fl">1.40</span>, <span class="fl">1.38</span>, <span class="fl">1.48</span>, <span class="fl">1.38</span>, <span class="fl">1.54</span>, <span class="fl">1.56</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>al2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">1.14</span>, <span class="fl">1.20</span>, <span class="fl">1.30</span>, <span class="fl">1.26</span>, <span class="fl">1.28</span>, <span class="fl">1.18</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>al <span class="ot">&lt;-</span> <span class="fu">dset</span>(al1, al2)</span></code></pre></div>
+<p>Replicate the two-sided p-values from page 14, using the
+sum-of-group-1 test statistic.<br />
+<strong>NOTE:</strong> Nguyen reports that the p-values as
+<code>0.07172827</code> for wing lengths, and <code>0.002197802</code>
+for antennae lengths. This matches our results.<br />
+However, Ernst (2004) reports the p-values as <code>0.0719</code> and
+<code>0.0022</code>, in which case the first does not match our results
+after rounding, though they are very close.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pval</span>(wl, <span class="at">tail =</span> <span class="st">&quot;Two&quot;</span>, <span class="at">value =</span> <span class="st">&quot;s&quot;</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.07172827</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">pval</span>(al, <span class="at">tail =</span> <span class="st">&quot;Two&quot;</span>, <span class="at">value =</span> <span class="st">&quot;s&quot;</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.002197802</span></span></code></pre></div>
+<p>Replicate the two-sided ~95% CIs for the mean difference from page
+15.<br />
+<strong>NOTE:</strong> Nguyen reports these as 94.90% CIs:
+<code>c(-0.246, 0.01)</code> for wing lengths and
+<code>c(0.087, 0.285)</code> for antennae lengths.<br />
+However, Ernst (2004) reports a 94.90% CI for wing lengths as
+<code>c(-0.250, 0.010)</code> and a 94.94% (NOT 94.90%!) CI for antennae
+lengths as <code>c(0.087, 0.286)</code>.<br />
+Neither of these is an exact match for our own results below, though
+both are very close.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cint</span>(wl, <span class="at">conf.level =</span> .<span class="dv">95</span>, <span class="at">tail =</span> <span class="st">&quot;Two&quot;</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Achieved conf. level: 1-2*(126/5005)</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.int</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] -0.2466667  0.0100000</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.level.achieved</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.9496503</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="fu">cint</span>(al, <span class="at">conf.level =</span> .<span class="dv">95</span>, <span class="at">tail =</span> <span class="st">&quot;Two&quot;</span>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Achieved conf. level: 1-2*(126/5005)</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.int</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.08666667 0.28500000</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.level.achieved</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.9496503</span></span></code></pre></div>
+<p>The confidence levels in Ernst (2004) and Nguyen (2009) might differ
+from ours due to typos or rounding, since it is not possible to achieve
+exactly 94.90% or 94.94% confidence with this method. There are <span class="math inline">\({9+6 \choose 9} = 5005\)</span> combinations. The
+closest confidence levels would be achieved if we used the 126th, 127th,
+or 128th lowest and highest <span class="math inline">\(w_{k,d}\)</span>
+values to get our two-sided CI endpoints. In those cases, the respective
+confidence levels would be <span class="math inline">\(1-2\times(126/5005)\approx 0.94965\)</span>, <span class="math inline">\(1-2\times(127/5005)\approx 0.94925\)</span>, or
+<span class="math inline">\(1-2\times(128/5005)\approx
+0.94885\)</span>.</p>
+<p>Also, Ernst (2004) may have different CI endpoints because he used an
+entirely different, less computationally-efficient method to calculate
+CIs, based on Garthwaite (1996), “Confidence intervals from
+randomization tests,” <em>Biometrics</em> 52, 1387-1393. <a href="https://doi.org/10.2307/2532852">DOI:10.2307/2532852</a>.</p>
+<div id="wing-and-antennae-lengths-with-monte-carlo" class="section level2">
+<h2>Wing and antennae lengths with Monte Carlo</h2>
+<p>With a modern computer, it takes little time to run all <span class="math inline">\({9+6 \choose 9} = 5005\)</span> possible
+combinations. But for larger datasets, where there are far more possible
+combinations, it can make sense to take a smaller Monte Carlo sample
+from all possible permutations.</p>
+<p>In our <code>dset()</code> function, the <code>nmc</code> argument
+lets us choose the number of Monte Carlo draws.</p>
+<p>As in Nguyen (2009), we repeat the above analysis, but this time we
+use 999 Monte Carlo draws instead of all 5005 possible combinations. Due
+to the randomness inherent in Monte Carlo sampling, these results will
+not match the exact results above nor Nguyen (2009)’s own Monte Carlo
+results; but they should be fairly close.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>wl <span class="ot">&lt;-</span> <span class="fu">dset</span>(wl1, wl2, <span class="at">nmc =</span> <span class="dv">999</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>al <span class="ot">&lt;-</span> <span class="fu">dset</span>(al1, al2, <span class="at">nmc =</span> <span class="dv">999</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">pval</span>(wl, <span class="at">tail =</span> <span class="st">&quot;Two&quot;</span>, <span class="at">value =</span> <span class="st">&quot;s&quot;</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.06706707</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="fu">pval</span>(al, <span class="at">tail =</span> <span class="st">&quot;Two&quot;</span>, <span class="at">value =</span> <span class="st">&quot;s&quot;</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.002002002</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="fu">cint</span>(wl, <span class="at">conf.level =</span> .<span class="dv">95</span>, <span class="at">tail =</span> <span class="st">&quot;Two&quot;</span>)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Achieved conf. level: 1-2*(25/999)</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.int</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] -0.25  0.01</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.level.achieved</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.9499499</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="fu">cint</span>(al, <span class="at">conf.level =</span> .<span class="dv">95</span>, <span class="at">tail =</span> <span class="st">&quot;Two&quot;</span>)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Achieved conf. level: 1-2*(25/999)</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.int</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.085 0.280</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.level.achieved</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.9499499</span></span></code></pre></div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,206 @@
+---
+title: "Replicating Nguyen (2009) with `CIPerm`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{nguyen}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+We show that our package replicates the analyses in:
+
+- Nguyen, M.D. (2009),
+"Nonparametric Inference using Randomization and Permutation
+Reference Distribution and their Monte-Carlo Approximation"
+[unpublished MS thesis; Mara Tableman, advisor], Portland State University.
+*Dissertations and Theses*. Paper 5927.
+https://archives.pdx.edu/ds/psu/37406.
+
+Note that our R function arguments and outputs are structured differently than the similarly-named R functions in Nguyen (2009), but the results are equivalent.
+
+We also compare our output against related results in:
+
+- Ernst, M.D. (2004),
+"Permutation Methods: A Basis for Exact Inference,"
+*Statistical Science*, vol. 19, no. 4, 676-685,
+[DOI:10.1214/088342304000000396](https://doi.org/10.1214/088342304000000396).
+
+Following Ernst (2004) and Nguyen (2009), we use the phrase "permutation methods"
+to include both *randomization* tests
+(where we assume random assignment of 2 treatments)
+and *permutation* tests
+(where we assume random sampling from 2 populations).
+In the simple settings in this R package,
+the randomization and permutation test mechanics are identical,
+though their interpretations may differ.
+
+
+# Brief overview of Nguyen (2009)'s method
+
+Consider a two-sample testing setup,
+where $X_1, \ldots, X_m$ are the responses from the control group
+and $Y_1, \ldots, Y_n$ are the responses from the treatment group.
+Imagine that lower responses are better (e.g., illness recovery times).
+
+With a standard one-sided randomization test or permutation test,
+we can test $H_0: \mu_Y - \mu_X \geq 0$ against $H_A: \mu_Y - \mu_X < 0$.
+
+We could also test for a specific value of $\mu_Y - \mu_X$, e.g.
+$H_0: \mu_Y - \mu_X \geq \Delta$ against $H_A: \mu_Y - \mu_X < \Delta$.
+If we assume a constant additive effect,
+we could carry this out by replacing all the $Y_j$ values with $Y_{j,\Delta} = Y_j-\Delta$
+and then running the usual randomization test for a difference of 0.
+
+Finally, we can invert the test to get a confidence interval.
+If we repeat the procedure above for many difference values of $\Delta$
+and record the values where the test fails to reject at level $\alpha$,
+we will have a $1-\alpha$ one-tailed confidence interval for $\Delta$.
+
+Doing this naively would require running many new permutations at each of many $\Delta$ values.
+But Nguyen (2009) derives a shortcut that gives this confidence interval directly from a single set of permutations.
+
+## We don't have to recompute the permutation distribution for each $\Delta$
+
+Each permutation involves swapping $k$ labels: we treat $k$ of the $X_i$ as if they were $Y_j$ and vice versa.
+Let $t_{k,d}$ be the difference in group means for $d^{th}$ of the permutations with $k$ swaps. For instance, on the original data we have
+\[t_0 = \frac{\sum_{j=1}^n Y_j}{n} - \frac{\sum_{i=1}^m X_i}{m}\]
+and other permutations have the form
+\[t_{k,d} = \frac{\sum_{i=1}^k X_i + \sum_{j=k+1}^n Y_j}{n} - \frac{\sum_{j=1}^k Y_j + \sum_{i=k+1}^m X_i}{m}\]
+
+Now if $t_{k,d,\Delta}$ is the same statistic but computed on the dataset where $Y_{j,\Delta}$ replaces $Y_j$, then Nguyen (2009) shows that
+\[t_{k,d,\Delta} = t_{k,d} - \Delta + k\left(\frac{1}{n}+\frac{1}{m}\right)\Delta\]
+So if we keep track of $k$ for each permutation, then one run of the randomization test is enough -- we don't need to carry out new runs for new $\Delta$ values.
+
+
+## We don't have to try every possible $\Delta$
+
+Next, we don't actually have to calculate $t_{k,d,\Delta}$ values directly---only the $t_{k,d}$ values we would usually calculate for a standard test of no difference in means, and the values of $k$ for each permutation.
+
+Let $w_{k,d} = \frac{t_0-t_{k,d}}{k\left(\frac{1}{n}+\frac{1}{m}\right)}$.
+Nguyen (2009) shows that if we compute the $w_{k,d}$ for each permutation and sort them,
+then their upper $\alpha$ quantile $w_{(\alpha)}$ gives the $1-\alpha$ one-sided CI upper bound for $\Delta$:
+\[\hat{P}[\Delta \in (-\infty, w_{(\alpha)})] = 1-\alpha\]
+To get a two-sided CI for $\Delta$, we can do this for both tails at half the nominal alpha.
+
+In our R package, `dset()` sets up the usual two-sample randomization or permutation test,
+but also records $k$ and $w_{k,d}$ for each permutation.
+Then `cint()` finds the appropriate quantiles of $w_{k,d}$ to return the confidence interval.
+
+We also track a few other test statistics, allowing `pval()` to return p-values
+for a difference in means, a difference in medians, or the Wilcoxon rank sum test.
+
+# Recovery times example
+
+Input the data from Table 1:
+
+```{r setup1}
+library(CIPerm)
+x <- c(19, 22, 25, 26)
+y <- c(23, 33, 40)
+```
+
+Replicate Table 2 along with the three extra columns from Table 3:
+
+```{r table2}
+demo <- dset(x, y, returnData = TRUE)
+knitr::kable(demo, digits = 2)
+```
+
+Replicate the left-tailed p-values reported on pages 5-6.  
+The first three should be `0.08571429`, and the last should be `0.1142857`.
+
+```{r pvals.p6}
+# Difference in means
+pval(demo, tail = "Left", value = "m")
+
+# Sum of treatment group
+pval(demo, tail = "Left", value = "s")
+
+# Difference in medians
+pval(demo, tail = "Left", value = "d")
+
+# Wilcoxon rank sum statistic
+pval(demo, tail = "Left", value = "w")
+```
+
+Replicate the confidence interval (left-tailed, with confidence level $(1 - \frac{2}{35})\times 100\% \approx 94.3\%$) reported on page 11.  
+This should be `c(-Inf, 2)`.
+
+```{r cint.p11}
+cint(demo, conf.level = 1-2/35, tail = "Left")
+```
+
+
+
+# Wing lengths and antennae lengths example
+
+Input and process the data from Table 4:
+
+```{r setup2}
+wl1 <- c(1.72, 1.64, 1.74, 1.70, 1.82, 1.82, 1.90, 1.82, 2.08)
+wl2 <- c(1.78, 1.86, 1.96, 2.00, 2.00, 1.96)
+wl <- dset(wl1, wl2)
+
+al1 <- c(1.24, 1.38, 1.36, 1.40, 1.38, 1.48, 1.38, 1.54, 1.56)
+al2 <- c(1.14, 1.20, 1.30, 1.26, 1.28, 1.18)
+al <- dset(al1, al2)
+```
+
+Replicate the two-sided p-values from page 14, using the sum-of-group-1 test statistic.  
+**NOTE:** Nguyen reports that the p-values as `0.07172827` for wing lengths, and `0.002197802` for antennae lengths. This matches our results.  
+However, Ernst (2004) reports the p-values as `0.0719` and `0.0022`, in which case the first does not match our results after rounding, though they are very close.
+
+```{r pvals.p14}
+pval(wl, tail = "Two", value = "s")
+pval(al, tail = "Two", value = "s")
+```
+
+Replicate the two-sided ~95\% CIs for the mean difference from page 15.  
+**NOTE:** Nguyen reports these as 94.90\% CIs: `c(-0.246, 0.01)` for wing lengths and `c(0.087, 0.285)` for antennae lengths.  
+However, Ernst (2004) reports a 94.90\% CI for wing lengths as `c(-0.250, 0.010)` and a 94.94\% (NOT 94.90\%!) CI for antennae lengths as `c(0.087, 0.286)`.  
+Neither of these is an exact match for our own results below, though both are very close.
+
+```{r cint.p15}
+cint(wl, conf.level = .95, tail = "Two")
+cint(al, conf.level = .95, tail = "Two")
+```
+
+The confidence levels in Ernst (2004) and Nguyen (2009) might differ from ours due to typos or rounding, since it is not possible to achieve exactly 94.90\% or 94.94\% confidence with this method. There are ${9+6 \choose 9} = 5005$ combinations. The closest confidence levels would be achieved if we used the 126th, 127th, or 128th lowest and highest $w_{k,d}$ values to get our two-sided CI endpoints. In those cases, the respective confidence levels would be $1-2\times(126/5005)\approx 0.94965$,
+$1-2\times(127/5005)\approx 0.94925$, or
+$1-2\times(128/5005)\approx 0.94885$.
+
+Also, Ernst (2004) may have different CI endpoints because he used an entirely different, less computationally-efficient method to calculate CIs, based on Garthwaite (1996), "Confidence intervals from randomization tests," *Biometrics* 52, 1387-1393. [DOI:10.2307/2532852](https://doi.org/10.2307/2532852).
+
+
+
+## Wing and antennae lengths with Monte Carlo
+
+With a modern computer, it takes little time to run all
+${9+6 \choose 9} = 5005$ possible combinations.
+But for larger datasets, where there are far more possible combinations,
+it can make sense to take a smaller Monte Carlo sample from all possible permutations.
+
+In our `dset()` function, the `nmc` argument lets us choose the number of Monte Carlo draws.
+
+As in Nguyen (2009), we repeat the above analysis, but 
+this time we use 999 Monte Carlo draws instead of all 5005 possible combinations.
+Due to the randomness inherent in Monte Carlo sampling,
+these results will not match the exact results above
+nor Nguyen (2009)'s own Monte Carlo results;
+but they should be fairly close.
+
+```{r montecarlo}
+wl <- dset(wl1, wl2, nmc = 999)
+al <- dset(al1, al2, nmc = 999)
+pval(wl, tail = "Two", value = "s")
+pval(al, tail = "Two", value = "s")
+cint(wl, conf.level = .95, tail = "Two")
+cint(al, conf.level = .95, tail = "Two")
+```
