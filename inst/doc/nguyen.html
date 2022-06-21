@@ -340,7 +340,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <li>Nguyen, M.D. (2009), “Nonparametric Inference using Randomization
 and Permutation Reference Distribution and their Monte-Carlo
 Approximation” [unpublished MS thesis; Mara Tableman, advisor], Portland
-State University. <em>Dissertations and Theses</em>. Paper 5927. <a href="https://archives.pdx.edu/ds/psu/37406" class="uri">https://archives.pdx.edu/ds/psu/37406</a>.</li>
+State University. <em>Dissertations and Theses</em>. Paper 5927. <a href="https://doi.org/10.15760/etd.7798">DOI:10.15760/etd.7798</a>.</li>
 </ul>
 <p>Note that our R function arguments and outputs are structured
 differently than the similarly-named R functions in Nguyen (2009), but
@@ -1156,7 +1156,7 @@ confidence levels would be <span class="math inline">\(1-2\times(126/5005)\appro
 <p>Also, Ernst (2004) may have different CI endpoints because he used an
 entirely different, less computationally-efficient method to calculate
 CIs, based on Garthwaite (1996), “Confidence intervals from
-randomization tests,” <em>Biometrics</em> 52, 1387-1393. <a href="https://doi.org/10.2307/2532852">DOI:10.2307/2532852</a>.</p>
+randomization tests,” <em>Biometrics</em> 52, 1387-1393, <a href="https://doi.org/10.2307/2532852">DOI:10.2307/2532852</a>.</p>
 <div id="wing-and-antennae-lengths-with-monte-carlo" class="section level2">
 <h2>Wing and antennae lengths with Monte Carlo</h2>
 <p>With a modern computer, it takes little time to run all <span class="math inline">\({9+6 \choose 9} = 5005\)</span> possible
@@ -1173,20 +1173,20 @@ results; but they should be fairly close.</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>wl <span class="ot">&lt;-</span> <span class="fu">dset</span>(wl1, wl2, <span class="at">nmc =</span> <span class="dv">999</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>al <span class="ot">&lt;-</span> <span class="fu">dset</span>(al1, al2, <span class="at">nmc =</span> <span class="dv">999</span>)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">pval</span>(wl, <span class="at">tail =</span> <span class="st">&quot;Two&quot;</span>, <span class="at">value =</span> <span class="st">&quot;s&quot;</span>)</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.06706707</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.08308308</span></span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="fu">pval</span>(al, <span class="at">tail =</span> <span class="st">&quot;Two&quot;</span>, <span class="at">value =</span> <span class="st">&quot;s&quot;</span>)</span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.002002002</span></span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="fu">cint</span>(wl, <span class="at">conf.level =</span> .<span class="dv">95</span>, <span class="at">tail =</span> <span class="st">&quot;Two&quot;</span>)</span>
 <span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Achieved conf. level: 1-2*(25/999)</span></span>
 <span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.int</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] -0.25  0.01</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] -0.25  0.02</span></span>
 <span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.level.achieved</span></span>
 <span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.9499499</span></span>
 <span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="fu">cint</span>(al, <span class="at">conf.level =</span> .<span class="dv">95</span>, <span class="at">tail =</span> <span class="st">&quot;Two&quot;</span>)</span>
 <span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Achieved conf. level: 1-2*(25/999)</span></span>
 <span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.int</span></span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.085 0.280</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.08666667 0.28000000</span></span>
 <span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.level.achieved</span></span>
 <span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.9499499</span></span></code></pre></div>

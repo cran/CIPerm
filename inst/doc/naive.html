@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Comparing CIPerm with ‘naive’ approach</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Comparing <code>CIPerm</code> with ‘naive’
+approach</h1>
+
+
+
+<p>We run simple timing comparisons to show how our package’s approach
+with Nguyen (2009) compares against a “naive” grid-based search approach
+to confidence intervals from permutation methods.</p>
+<div id="defining-streamlined-functions" class="section level1">
+<h1>Defining streamlined functions</h1>
+<p>We can use <code>CIPerm</code>’s <code>cint(dset(x, y))</code>
+directly, and it already wins against the naive for-loop or array-based
+approaches. But since <code>dset</code> and <code>cint</code> both have
+extra cruft built into them, for an even “fairer” comparison we recreate
+the core of <code>cint(dset())</code> here without all the extra
+variables and without passing copies of dataframes.</p>
+<p>First we re-define the internal function
+<code>roundOrCeiling()</code>, then we define a streamlined
+<code>cint.nguyen()</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="do">#### Define a streamlined function for Nguyen approach ####</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. use round(siglevel*num), if siglevel*num is basically an integer,</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">#    to within the default numerical tolerance of all.equal();</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. or otherwise use ceiling(siglevel*num) instead.</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>roundOrCeiling <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ifelse</span>(<span class="fu">isTRUE</span>(<span class="fu">all.equal</span>(<span class="fu">round</span>(x), x)), <span class="co"># is x==round(x) to numerical tolerance?</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>         <span class="fu">round</span>(x),</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>         <span class="fu">ceiling</span>(x))</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>cint.nguyen <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, <span class="at">nmc =</span> <span class="dv">10000</span>, <span class="at">conf.level =</span> <span class="fl">0.95</span>) {</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Two-tailed CIs only, for now</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  sig <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> conf.level</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Code copied/modified from within CIPerm::dset()</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">length</span>(x)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  m <span class="ot">&lt;-</span> <span class="fu">length</span>(y)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  N <span class="ot">&lt;-</span> n <span class="sc">+</span> m</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  num <span class="ot">&lt;-</span> <span class="fu">choose</span>(N, n) <span class="co"># number of possible combinations</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Form a matrix where each column contains indices in new &quot;group1&quot; for that comb or perm</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(nmc <span class="sc">==</span> <span class="dv">0</span> <span class="sc">|</span> num <span class="sc">&lt;=</span> nmc) { <span class="co"># take all possible combinations</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    dcombn1 <span class="ot">&lt;-</span> utils<span class="sc">::</span><span class="fu">combn</span>(<span class="dv">1</span><span class="sc">:</span>N, n)</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> { <span class="co"># use Monte Carlo sample of permutations, not all possible combinations</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    dcombn1 <span class="ot">&lt;-</span> <span class="fu">replicate</span>(nmc, <span class="fu">sample</span>(N, n))</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    dcombn1[,<span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span>n <span class="co"># force the 1st &quot;combination&quot; to be original data order</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    num <span class="ot">&lt;-</span> nmc</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Form the equivalent matrix for indices in new &quot;group2&quot;</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>  dcombn2 <span class="ot">&lt;-</span> <span class="fu">apply</span>(dcombn1, <span class="dv">2</span>, <span class="cf">function</span>(x) <span class="fu">setdiff</span>(<span class="dv">1</span><span class="sc">:</span>N, x))</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Form the corresponding matrices of data values, not data indices</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  combined <span class="ot">&lt;-</span> <span class="fu">c</span>(x, y)</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>  group1_perm <span class="ot">&lt;-</span> <span class="fu">matrix</span>(combined[dcombn1], <span class="at">nrow =</span> n)</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>  group2_perm <span class="ot">&lt;-</span> <span class="fu">matrix</span>(combined[dcombn2], <span class="at">nrow =</span> m)</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>  <span class="co"># For each comb or perm, compute difference in group means, k, and w_{k,d}</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>  diffmean <span class="ot">&lt;-</span> <span class="fu">colMeans</span>(group1_perm) <span class="sc">-</span> <span class="fu">colMeans</span>(group2_perm)</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>  k <span class="ot">&lt;-</span> <span class="fu">colSums</span>(<span class="fu">matrix</span>(dcombn1 <span class="sc">%in%</span> ((n<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>N),</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>                      <span class="at">nrow =</span> n))</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>  wkd <span class="ot">&lt;-</span> (diffmean[<span class="dv">1</span>] <span class="sc">-</span> diffmean) <span class="sc">/</span> (k <span class="sc">*</span> (<span class="dv">1</span><span class="sc">/</span>n <span class="sc">+</span> <span class="dv">1</span><span class="sc">/</span>m))</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Code copied/modified from within CIPerm::cint()</span></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Sort wkd values and find desired quantiles</span></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>  w.i <span class="ot">&lt;-</span> <span class="fu">sort</span>(wkd, <span class="at">decreasing =</span> <span class="cn">FALSE</span>, <span class="at">na.last =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>  siglevel <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> conf.level)<span class="sc">/</span><span class="dv">2</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>  index <span class="ot">&lt;-</span> <span class="fu">roundOrCeiling</span>(siglevel<span class="sc">*</span>num) <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   When dset&#39;s nmc leads us to use Monte Carlo sims,</span></span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   we may get some permutations equivalent to orig data</span></span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   i.e. we may get SEVERAL k=0 and therefore several w.i=NaN.</span></span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>  nk0 <span class="ot">&lt;-</span> <span class="fu">sum</span>(k <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Start counting from (1+nk0)&#39;th element of w.i</span></span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>  <span class="co"># (not the 1st, which will always be &#39;NaN&#39; since k[1] is 0)</span></span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>  LB <span class="ot">&lt;-</span> w.i[<span class="dv">1</span> <span class="sc">+</span> nk0 <span class="sc">+</span> index]</span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>  UB <span class="ot">&lt;-</span> w.i[(num <span class="sc">-</span> index)]</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>  CI <span class="ot">&lt;-</span> <span class="fu">c</span>(LB, UB)</span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>  conf.achieved <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (<span class="dv">2</span><span class="sc">*</span>(index<span class="sc">+</span><span class="dv">1</span>) <span class="sc">/</span> num)</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>    <span class="fu">message</span>(<span class="fu">paste0</span>(<span class="st">&quot;Achieved conf. level: 1-2*(&quot;</span>, index<span class="sc">+</span><span class="dv">1</span>, <span class="st">&quot;/&quot;</span>, num, <span class="st">&quot;)&quot;</span>))</span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">conf.int =</span> CI,</span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a>                <span class="at">conf.level.achieved =</span> conf.achieved))</span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Next, we define an equivalent function to implement the “naive”
+approach:</p>
+<ul>
+<li>Choose a grid of possible values of delta = mu_X-mu_Y to try</li>
+<li>For each delta…
+<ul>
+<li>subtract delta off of the x’s,</li>
+<li>and carry out a test of H_0: mu_X=mu_Y on the resulting data</li>
+</ul></li>
+<li>Our confidence interval consists of the range of delta values for
+which H_0 is NOT rejected</li>
+</ul>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="do">#### Define a function for &quot;naive&quot; approach with for-loop ####</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>cint.naive.forloop <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, deltas,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                               <span class="at">nmc =</span> <span class="dv">10000</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                               <span class="at">conf.level =</span> <span class="fl">0.95</span>) {</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Two-tailed CIs only, for now</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  sig <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> conf.level</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  pvalmeans <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span>, <span class="fu">length</span>(deltas))</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Code copied/modified from within CIPerm::dset()</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">length</span>(x)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  m <span class="ot">&lt;-</span> <span class="fu">length</span>(y)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  N <span class="ot">&lt;-</span> n <span class="sc">+</span> m</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  num <span class="ot">&lt;-</span> <span class="fu">choose</span>(N, n) <span class="co"># number of possible combinations</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Form a matrix where each column contains indices in new &quot;group1&quot; for that comb or perm</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(nmc <span class="sc">==</span> <span class="dv">0</span> <span class="sc">|</span> num <span class="sc">&lt;=</span> nmc) { <span class="co"># take all possible combinations</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    dcombn1 <span class="ot">&lt;-</span> utils<span class="sc">::</span><span class="fu">combn</span>(<span class="dv">1</span><span class="sc">:</span>N, n)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> { <span class="co"># use Monte Carlo sample of permutations, not all possible combinations</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    dcombn1 <span class="ot">&lt;-</span> <span class="fu">replicate</span>(nmc, <span class="fu">sample</span>(N, n))</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    dcombn1[,<span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span>n <span class="co"># force the 1st &quot;combination&quot; to be original data order</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    num <span class="ot">&lt;-</span> nmc</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Form the equivalent matrix for indices in new &quot;group2&quot;</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>  dcombn2 <span class="ot">&lt;-</span> <span class="fu">apply</span>(dcombn1, <span class="dv">2</span>, <span class="cf">function</span>(x) <span class="fu">setdiff</span>(<span class="dv">1</span><span class="sc">:</span>N, x))</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(dd <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(deltas)) {</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    xtmp <span class="ot">&lt;-</span> x <span class="sc">-</span> deltas[dd]</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Code copied/modified from within CIPerm::dset()</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    combined <span class="ot">&lt;-</span> <span class="fu">c</span>(xtmp, y)</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Form the corresponding matrices of data values, not data indices</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    group1_perm <span class="ot">&lt;-</span> <span class="fu">matrix</span>(combined[dcombn1], <span class="at">nrow =</span> n)</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>    group2_perm <span class="ot">&lt;-</span> <span class="fu">matrix</span>(combined[dcombn2], <span class="at">nrow =</span> m)</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    <span class="co"># For each comb or perm, compute difference in group means</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>    diffmean <span class="ot">&lt;-</span> <span class="fu">colMeans</span>(group1_perm) <span class="sc">-</span> <span class="fu">colMeans</span>(group2_perm)</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Code copied/modified from within CIPerm::pval()</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>    pvalmeans[dd] <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">abs</span>(diffmean <span class="sc">-</span> <span class="fu">mean</span>(diffmean)) <span class="sc">&gt;=</span> <span class="fu">abs</span>(diffmean[<span class="dv">1</span>] <span class="sc">-</span> <span class="fu">mean</span>(diffmean)))<span class="sc">/</span><span class="fu">length</span>(diffmean)</span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>( <span class="fu">range</span>(deltas[<span class="fu">which</span>(pvalmeans <span class="sc">&gt;=</span> sig)]) )</span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">cint =</span> <span class="fu">range</span>(deltas[<span class="fu">which</span>(pvalmeans <span class="sc">&gt;=</span> sig)]),</span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>              <span class="at">pvalmeans =</span> pvalmeans,</span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>              <span class="at">deltas =</span> deltas))</span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>We also wrote another “naive” function that avoids for-loops and
+takes a “vectorized” approach instead. We created large arrays: each
+permutation requires a matrix, and the 3rd array dimension is over
+permutations. Then <code>apply</code> and <code>colSums</code> work very
+quickly to carry out all the per-permutations steps on this array at
+once. However, we found that unless datasets were trivially small,
+creating and storing the array took a lot of time and memory, and it
+ended up far slower than the for-loop approach. Consequently we do not
+report this function or its results here, although curious readers can
+find it hidden in the vignette’s .Rmd file.</p>
+</div>
+<div id="speed-tests" class="section level1">
+<h1>Speed tests</h1>
+<div id="tiny-dataset" class="section level2">
+<h2>Tiny dataset</h2>
+<p>When we compare the timings, <code>cint.naive()</code> will need to
+have a reasonable search grid for values of <code>delta</code>. On this
+problem, we happen to know the correct CI endpoints are the integers
+<code>(-21, 3)</code>, so we “cheat” by using <code>(-22):4</code> as
+the grid for <code>cint.naive()</code>. Of course in practice, if you
+had only the naive approach, you would probably have to try a wider
+grid, since you wouldn’t already know the answer.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="do">#### Speed tests on Nguyen&#39;s tiny dataset ####</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Use 1st tiny dataset from Nguyen&#39;s paper</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(CIPerm)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">19</span>, <span class="dv">22</span>, <span class="dv">25</span>, <span class="dv">26</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">23</span>, <span class="dv">33</span>, <span class="dv">40</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Actual CIPerm package&#39;s approach:</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">system.time</span>({</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>( <span class="fu">cint</span>(<span class="fu">dset</span>(x, y), <span class="at">conf.level =</span> <span class="fl">0.95</span>, <span class="at">tail =</span> <span class="st">&quot;Two&quot;</span>) )</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Achieved conf. level: 1-2*(1/35)</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.int</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] -21   3</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.level.achieved</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.9428571</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    user  system elapsed </span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;       0       0       0</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Streamlined version of CIPerm approach:</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="fu">system.time</span>({</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>( <span class="fu">cint.nguyen</span>(x, y, <span class="at">conf.level =</span> <span class="fl">0.95</span>) )</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Achieved conf. level: 1-2*(1/35)</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.int</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] -21   3</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.level.achieved</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.9428571</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    user  system elapsed </span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    0.05    0.00    0.04</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Naive approach with for-loops:</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>deltas <span class="ot">&lt;-</span> ((<span class="sc">-</span><span class="dv">22</span>)<span class="sc">:</span><span class="dv">4</span>)</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="fu">system.time</span>({</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>  pvalmeans <span class="ot">&lt;-</span> <span class="fu">cint.naive.forloop</span>(x, y, deltas)<span class="sc">$</span>pvalmeans</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] -21   3</span></span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    user  system elapsed </span></span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    0.05    0.00    0.05</span></span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a><span class="co"># Sanity check to debug `cint.naive`:</span></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a><span class="co"># are the p-vals always higher when closer to middle of CI?</span></span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a><span class="co"># Are they always above 0.05 inside and below it outside CI?</span></span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a><span class="fu">cbind</span>(deltas, pvalmeans)</span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;       deltas  pvalmeans</span></span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [1,]    -22 0.02857143</span></span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [2,]    -21 0.05714286</span></span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [3,]    -20 0.05714286</span></span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [4,]    -19 0.05714286</span></span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [5,]    -18 0.14285714</span></span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [6,]    -17 0.14285714</span></span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [7,]    -16 0.20000000</span></span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [8,]    -15 0.25714286</span></span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [9,]    -14 0.37142857</span></span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [10,]    -13 0.54285714</span></span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [11,]    -12 0.60000000</span></span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [12,]    -11 0.80000000</span></span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [13,]    -10 0.85714286</span></span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [14,]     -9 1.00000000</span></span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [15,]     -8 0.88571429</span></span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [16,]     -7 0.74285714</span></span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [17,]     -6 0.57142857</span></span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [18,]     -5 0.45714286</span></span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [19,]     -4 0.34285714</span></span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [20,]     -3 0.25714286</span></span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [21,]     -2 0.22857143</span></span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [22,]     -1 0.14285714</span></span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [23,]      0 0.11428571</span></span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [24,]      1 0.08571429</span></span>
+<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [25,]      2 0.08571429</span></span>
+<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [26,]      3 0.05714286</span></span>
+<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [27,]      4 0.02857143</span></span>
+<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(deltas, pvalmeans)</span>
+<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="fl">0.05</span>)</span>
+<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">v =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">21</span>, <span class="dv">3</span>), <span class="at">lty =</span> <span class="dv">2</span>)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Yes, it&#39;s as it should be :)</span></span></code></pre></div>
+<p>Above we see timings for the original
+<code>CIPerm::cint(dset))</code>, its streamlined
+version<code>cint.nguyen()</code>, and the naive equivalent
+<code>cint.naive()</code>.<br />
+In the case of a tiny dataset like this, all 3 approaches take almost no
+time. So it can be a tossup as to which one is fastest on this
+example.</p>
+</div>
+<div id="larger-dataset" class="section level2">
+<h2>Larger dataset</h2>
+<p>Try a slightly larger dataset, where the total number of permutations
+is above the default <code>nmc=10000</code> but still manageable on a
+laptop.</p>
+<p>Again, <code>cint.naive()</code> will need to have a reasonable
+search grid for values of <code>delta</code>. This time again we will
+set up a grid that just barely covers the correct endpoints from
+<code>cint.nguyen()</code>, and again we’ll try to keep it at around 20
+to 25 grid points in all. Then we’ll try timing it again with a slightly
+finer grid.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">choose</span>(<span class="dv">18</span>, <span class="dv">9</span>) <span class="do">## 48620</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 48620</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">20220528</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">9</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">9</span>, <span class="at">mean =</span> <span class="dv">1</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Actual CIPerm approach</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># (with nmc = 0,</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co">#  so that we use ALL of the choose(N,n) combinations</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co">#  instead of a MC sample of permutations)</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="fu">system.time</span>({</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>( <span class="fu">cint</span>(<span class="fu">dset</span>(x, y, <span class="at">nmc =</span> <span class="dv">0</span>),</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>              <span class="at">conf.level =</span> <span class="fl">0.95</span>, <span class="at">tail =</span> <span class="st">&quot;Two&quot;</span>) )</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Achieved conf. level: 1-2*(1216/48620)</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.int</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] -2.06178174  0.07679298</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.level.achieved</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.9499794</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    user  system elapsed </span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    0.90    0.03    0.93</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Streamlined version of CIPerm approach:</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="fu">system.time</span>({</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>( <span class="fu">cint.nguyen</span>(x, y, <span class="at">nmc =</span> <span class="dv">0</span>, <span class="at">conf.level =</span> <span class="fl">0.95</span>) )</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Achieved conf. level: 1-2*(1216/48620)</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.int</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] -2.06178174  0.07679298</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.level.achieved</span></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.9499794</span></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    user  system elapsed </span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    0.76    0.04    0.81</span></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a><span class="co"># Coarser grid</span></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>deltas <span class="ot">&lt;-</span> ((<span class="sc">-</span><span class="dv">21</span>)<span class="sc">:</span>(<span class="dv">1</span>))<span class="sc">/</span><span class="dv">10</span>     <span class="co"># grid steps of 0.1</span></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a><span class="co"># Naive with for-loops:</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a><span class="fu">system.time</span>({</span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>  pvalmeans <span class="ot">&lt;-</span> <span class="fu">cint.naive.forloop</span>(x, y, deltas, <span class="at">nmc =</span> <span class="dv">0</span>)<span class="sc">$</span>pvalmeans</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] -2  0</span></span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    user  system elapsed </span></span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    1.54    0.29    1.90</span></span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a><span class="co"># Finer grid</span></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>deltas <span class="ot">&lt;-</span> ((<span class="sc">-</span><span class="dv">21</span><span class="sc">*</span><span class="dv">2</span>)<span class="sc">:</span>(<span class="dv">1</span><span class="sc">*</span><span class="dv">2</span>))<span class="sc">/</span><span class="dv">20</span> <span class="co"># grid steps of 0.05</span></span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a><span class="co"># Naive with for-loops:</span></span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a><span class="fu">system.time</span>({</span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a>  pvalmeans <span class="ot">&lt;-</span> <span class="fu">cint.naive.forloop</span>(x, y, deltas, <span class="at">nmc =</span> <span class="dv">0</span>)<span class="sc">$</span>pvalmeans</span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] -2.05  0.05</span></span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    user  system elapsed </span></span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    3.19    0.50    3.96</span></span></code></pre></div>
+<p>Now, <code>CIPerm::cint(dset())</code> and the
+<code>cint.nguyen</code> approach take about the same amount of time,
+and they are noticeably faster than the <code>cint.naive</code>
+approach. (And even more so when we use a finer search grid.) That
+happens even with the “cheat” of using <code>CIPerm</code> first to find
+the right CI limits so that our naive search grid isn’t too wide, just
+stepping over the minimal required range with a reasonable
+grid-coarseness.</p>
+<p>(For the original data where CI = (-21, 3), we stepped from -22 to 4
+in integers. For latest data where CI = (-2.06, 0.08), we stepped from
+-2.1 to 0.1 in units of 0.1 and then 0.05.)</p>
+<p>In practice there are probably cleverer ways for the naive method to
+choose grid discreteness and endpoints… but still, this seems like a
+more-than-fair chance for the naive approach.</p>
+</div>
+<div id="largest-dataset" class="section level2">
+<h2>Largest dataset</h2>
+<p>Try an even larger example, where we’re OK with a smallish total
+number of permutations (eg <code>nmc=10000</code>), but the dataset
+itself is “huge”, so that each individual permutation takes a longer
+time.</p>
+<p>We still don’t make it all that large, since we want this vignette to
+knit in a reasonable time. But we’ve seen similar results when we made
+even-larger datasets that took longer to run.</p>
+<p>Once again, for <code>cint.naive()</code> we will set up a search
+grid that just barely covers the correct endpoints from
+<code>cint.nguyen()</code>, and again we’ll try to keep it at around 20
+to 25 grid points in all.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="do">#### Speed tests on much larger dataset ####</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">20220528</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="fl">5e3</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="fl">5e3</span>, <span class="at">mean =</span> <span class="dv">1</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Actual CIPerm approach</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># (with nmc = 2000 &lt;&lt; choose(N,n),</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">#  so it only takes a MC sample of permutations</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co">#  instead of running all possible combinations)</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="fu">system.time</span>({</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>( <span class="fu">cint</span>(<span class="fu">dset</span>(x, y, <span class="at">nmc =</span> <span class="fl">2e3</span>),</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>              <span class="at">conf.level =</span> <span class="fl">0.95</span>, <span class="at">tail =</span> <span class="st">&quot;Two&quot;</span>) )</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Achieved conf. level: 1-2*(50/2000)</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.int</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] -1.0227345 -0.9437299</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.level.achieved</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.95</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    user  system elapsed </span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    8.76    1.63   11.23</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Streamlined version of CIPerm approach:</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="fu">system.time</span>({</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>( <span class="fu">cint.nguyen</span>(x, y, <span class="at">nmc =</span> <span class="fl">2e3</span>, <span class="at">conf.level =</span> <span class="fl">0.95</span>) )</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Achieved conf. level: 1-2*(50/2000)</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.int</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] -1.0232198 -0.9435962</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $conf.level.achieved</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.95</span></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    user  system elapsed </span></span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    8.84    1.54   11.04</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a><span class="co"># Grid of around 20ish steps</span></span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>deltas <span class="ot">&lt;-</span> ((<span class="sc">-</span><span class="dv">11</span><span class="sc">*</span><span class="dv">10</span>)<span class="sc">:</span>(<span class="sc">-</span><span class="dv">9</span><span class="sc">*</span><span class="dv">10</span>))<span class="sc">/</span><span class="dv">100</span> <span class="co"># grid steps of 0.01</span></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a><span class="co"># Naive with for-loops:</span></span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a><span class="fu">system.time</span>({</span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>  pvalmeans <span class="ot">&lt;-</span> <span class="fu">cint.naive.forloop</span>(x, y, deltas, <span class="at">nmc =</span> <span class="fl">2e3</span>)<span class="sc">$</span>pvalmeans</span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] -1.02 -0.95</span></span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    user  system elapsed </span></span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   13.83    6.75   21.71</span></span></code></pre></div>
+<p>Here we finally see that the overhead built into
+<code>CIPerm::cint(dset())</code> makes it slightly slower than the
+streamlined <code>cint.nguyen()</code>. However, both are
+<em>substantially</em> faster than <code>cint.naive()</code>—they run in
+less than half the time of the naive approach.</p>
+</div>
+</div>
+<div id="benchmark-and-profvis" class="section level1">
+<h1><code>bench::mark()</code> and <code>profvis</code></h1>
+<p>The results above are from one run per method on each example
+dataset.</p>
+<p>Using the last (“largest”) dataset, we also tried using
+<code>bench::mark()</code> to summarize the distribution of runtimes
+over many runs, as well as memory usage.<br />
+<em>(Not actually run when the vignette knits, in order to avoid needing
+<code>bench</code> as a dependency.)</em></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># bench::mark(cint.nguyen(x, y, nmc = 2e3),</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">#             cint.naive.forloop(x, y, deltas, nmc = 2e3),</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">#             check = FALSE, min_iterations = 10)</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 13</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   expression                                        min   median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result memory                  time            gc               </span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   &lt;bch:expr&gt;                                   &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt;   &lt;bch:tm&gt; &lt;list&gt; &lt;list&gt;                  &lt;list&gt;          &lt;list&gt;           </span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 cint.nguyen(x, y, nmc = 2000)                    2.5s    2.71s     0.364    1.58GB     2.92    10    80     27.44s &lt;NULL&gt; &lt;Rprofmem [32,057 × 3]&gt; &lt;bench_tm [10]&gt; &lt;tibble [10 × 3]&gt;</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 cint.naive.forloop(x, y, deltas, nmc = 2000)    7.87s    8.07s     0.120     7.4GB     4.64    10   388      1.39m &lt;NULL&gt; &lt;Rprofmem [32,256 × 3]&gt; &lt;bench_tm [10]&gt; &lt;tibble [10 × 3]&gt;</span></span></code></pre></div>
+<p>Finally, we also tried using the <code>profvis</code> package to
+check what steps are taking the longest time.<br />
+<em>(Again, not actually run when the vignette knits, in order to avoid
+needing <code>profvis</code> as a dependency; but screenshots are
+included below.)</em></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># profvis::profvis(cint.nguyen(x, y, nmc = 2e3))</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co"># profvis::profvis(cint.naive.forloop(x, y, deltas, nmc = 2e3))</span></span></code></pre></div>
+<p>For Nguyen’s method, the initial setup with <code>combn()</code> or
+<code>sample()</code> followed by <code>apply(setdiff())</code> takes
+about 80% of the time, and the per-permutation calculations only take
+about 20% of the time:<br />
+<code>profvis::profvis(cint.nguyen(x, y, nmc = 2e3))</code></p>
+<p><img src="data:image/png;base64,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" /></p>
+<p>For the naive method, the initial setup is identical, and each round
+of per-permutation calculations is slightly faster than in Nguyen’s
+method… but because you have to repeat them many times (<em>unless you
+already know the CI endpoints, in which case you wouldn’t need to run
+this at all!</em>), they can add up to substantially more total time
+than for Nguyen’s method.<br />
+<code>profvis::profvis(cint.naive.forloop(x, y, deltas, nmc = 2e3))</code></p>
+<p><img src="data:image/png;base64,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" /></p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
